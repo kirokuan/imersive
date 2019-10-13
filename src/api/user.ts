@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { default as User, UserModel } from '../models/User';
 import * as passport from 'passport';
 
-export const postLogin = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
 
   check('password').isAlphanumeric();
   check('password').isLength({ min: 4 });
@@ -13,38 +13,26 @@ export const postLogin = async (req: Request, res: Response, next: NextFunction)
   if (!errors.isEmpty()) {
     return res.sendStatus(422).json({ errors: errors.array() });
   }
-  passport.authenticate('local', (err: Error, user: UserModel, info?: { message: string }) => {
+  const newUser = new User({
+    email: req.body.username,
+    password: req.body.password,
+    lastLogin: new Date()
+  });
+  newUser.save(err => {
     if (err) {
       return next(err);
     }
-    if (info) {
-      const code = +info.message;
-      if (code) {
-        return res.sendStatus(401);
-      }
-      if (!user || !code) {
-        const newUser = new User({
-          email: req.body.username,
-          password: req.body.password
-        });
-        return newUser.save(err => {
-          if (err) {
-            return next(err);
-          }
-          req.logIn(newUser, err => {
-            if (err) {
-              return next(err);
-            }
-            res.sendStatus(201);
-          });
-        });
-      }
-    }
-    req.logIn(user, err => {
+    req.logIn(newUser, err => {
       if (err) {
         return next(err);
       }
-      res.sendStatus(204);
+      res.sendStatus(201);
     });
-  })(req, res, next);
+  });
+
+};
+
+export const logOut = (req: Request, res: Response) => {
+  req.logout();
+  res.sendStatus(204);
 };

@@ -4,7 +4,7 @@ import * as errorHandler from 'errorhandler';
 import * as mongo from 'connect-mongo';
 import * as path from 'path';
 import mongoose from './export/mongoose';
-import { postLogin } from './api/user';
+import { login, logOut } from './api/user';
 const app = express();
 
 const MongoStore = mongo(session);
@@ -12,7 +12,9 @@ const MongoStore = mongo(session);
 
 mongoose.connect(process.env.MONGODB_URI);
 app.use(errorHandler());
-app.post("login", postLogin);
+
+app.post("login", login);
+app.post("logout", logOut);
 app.get( "/", ( req, res ) => {
     res.sendStatus(201);
 });
