@@ -26,29 +26,32 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       res.sendStatus(201);
     });
   } else {
-    res.sendStatus(401);
+    res.sendStatus(403);
   }
 };
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   const user: any = await User.findOne({ username: req.body.username.toLowerCase() });
   if (!user) {
     res.sendStatus(401);
-  }
-  user.comparePassword( req.body.password, (err: Error, isMatch: boolean) => {
-    if (err) {
-      return next(err);
-    }
-    if (!isMatch) {
-      res.sendStatus(401);
-    }
-    // TODO: use JWT?? 
-    req.logIn(user, err => {
+  } else {
+    user.comparePassword(req.body.password, (err: Error, isMatch: boolean) => {
       if (err) {
         return next(err);
       }
-      res.sendStatus(201);
+      if (!isMatch) {
+        res.sendStatus(403);
+      } else {
+        // TODO: use JWT?? 
+        req.logIn(user, err => {
+          if (err) {
+            return next(err);
+          }
+          res.sendStatus(201);
+        });
+      }
     });
-  });
+  }
+
 }
 export const logOut = (req: Request, res: Response) => {
   req.logout();
