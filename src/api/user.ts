@@ -41,7 +41,13 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     if (!isMatch) {
       res.sendStatus(401);
     }
-    res.sendStatus(201);
+    // TODO: use JWT?? 
+    req.logIn(user, err => {
+      if (err) {
+        return next(err);
+      }
+      res.sendStatus(201);
+    });
   });
 }
 export const logOut = (req: Request, res: Response) => {
