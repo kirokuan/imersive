@@ -5,6 +5,7 @@ import * as mongo from 'connect-mongo';
 import * as path from 'path';
 import mongoose from './export/mongoose';
 import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
 
 import { default as User } from './models/User';
@@ -18,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI);
 
 app.use(errorHandler());
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -33,12 +35,13 @@ passport.serializeUser<any, any>((user, done) => {
     done(undefined, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+    } catch (e) {
+        console.error(e);
+    }
 });
-
 app.post("/login", login);
 app.post("/register", register);
 app.post("/logout", logOut);
