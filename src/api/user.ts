@@ -32,7 +32,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   const user: any = await User.findOne({ username: req.body.username.toLowerCase() });
   if (!user) {
-    res.sendStatus(401);
+    res.sendStatus(403);
   } else {
     user.comparePassword(req.body.password, (err: Error, isMatch: boolean) => {
       if (err) {
